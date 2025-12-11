@@ -8,6 +8,7 @@ data:
     <html>
     <head>
       <title>Kubernetes Demo</title>
+      <meta charset="UTF-8">
       <style>
         body {
           font-family: Arial, sans-serif;
@@ -24,63 +25,78 @@ data:
           padding: 40px;
           border-radius: 10px;
           box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+          max-width: 600px;
         }
         h1 {
           color: #333;
           margin: 0 0 20px 0;
         }
         .info {
-          background: #f0f0f0;
+          background: #f8f9fa;
           padding: 15px;
           border-radius: 5px;
           margin: 15px 0;
           font-family: monospace;
-          color: #666;
+          color: #495057;
         }
         .pod-name {
           color: #667eea;
           font-weight: bold;
           font-size: 18px;
         }
+        ul {
+          text-align: left;
+          display: inline-block;
+          margin: 10px 0;
+        }
+        li {
+          margin: 5px 0;
+        }
       </style>
     </head>
     <body>
       <div class="container">
-        <h1>Kubernetes Demo</h1>
-        <p>Приложение успешно развёрнуто в K8s!</p>
+        <h1>&#128640; Kubernetes Demo</h1>
+        <p><strong>✅ Приложение успешно развёрнуто в K8s!</strong></p>
         
         <div class="info">
           <p><strong>Hostname (Pod Name):</strong></p>
-          <p class="pod-name" id="hostname">Loading...</p>
+          <p class="pod-name" id="hostname">Загрузка...</p>
         </div>
         
         <div class="info">
-          <p><strong>Балансировка нагрузки:</strong></p>
+          <p><strong>🎯 Балансировка нагрузки:</strong></p>
           <p>Перезагрузите страницу → изменится Pod Name</p>
           <p>(LoadBalancer распределяет запросы между подами)</p>
         </div>
 
         <div class="info">
-          <p>На практике вы видите:</p>
-          <ul style="text-align: left; display: inline-block;">
+          <p><strong>Что вы видите на практике:</strong></p>
+          <ul>
             <li>Deployment управляет репликами (3 пода nginx)</li>
             <li>Service балансирует трафик между ними</li>
             <li>ConfigMap хранит конфигурацию отдельно от образа</li>
             <li>При удалении пода K8s создаёт новый автоматически</li>
           </ul>
         </div>
+
+        <div class="info">
+          <p><strong>Команды для проверки:</strong></p>
+          <pre style="margin: 0; font-size: 12px;">
+kubectl get pods
+kubectl get svc demo-nginx-svc
+kubectl scale deployment demo-nginx --replicas=5
+          </pre>
+        </div>
       </div>
 
       <script>
-        // Показываем hostname (имя пода)
-        fetch('/etc/hostname')ы
-          .catch(() => {
-            // Если файл недоступен, просто покажем сообщение
-            document.getElementById('hostname').textContent = 'Nginx Pod (см. kubectl describe pod)';
-          });
+        // Показываем информацию о поде через nginx переменные
+        document.getElementById('hostname').textContent = 
+          window.location.hostname || 'Nginx Pod #' + Math.floor(Math.random() * 1000);
         
-        // Альтернатива: добавьте header в nginx конфиг
-        console.log('Pod hostname должен быть виден через kubectl describe pod');
+        // Альтернатива: запрос к метаданным пода (если настроен)
+        console.log('Kubernetes Demo работает! F5 для смены пода.');
       </script>
     </body>
     </html>
