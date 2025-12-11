@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-nginx
+  labels:
+    app: demo-nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: demo-nginx
+  template:
+    metadata:
+      labels:
+        app: demo-nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+          # Монтируем ConfigMap как файл index.html
+          volumeMounts:
+            - name: html-volume
+              mountPath: /usr/share/nginx/html
+      # Определяем volume из ConfigMap
+      volumes:
+        - name: html-volume
+          configMap:
+            name: demo-nginx-html

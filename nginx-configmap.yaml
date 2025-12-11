@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: demo-nginx-html
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Kubernetes Demo</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          margin: 0;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+          text-align: center;
+          background: white;
+          padding: 40px;
+          border-radius: 10px;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        h1 {
+          color: #333;
+          margin: 0 0 20px 0;
+        }
+        .info {
+          background: #f0f0f0;
+          padding: 15px;
+          border-radius: 5px;
+          margin: 15px 0;
+          font-family: monospace;
+          color: #666;
+        }
+        .pod-name {
+          color: #667eea;
+          font-weight: bold;
+          font-size: 18px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>Kubernetes Demo</h1>
+        <p>Приложение успешно развёрнуто в K8s!</p>
+        
+        <div class="info">
+          <p><strong>Hostname (Pod Name):</strong></p>
+          <p class="pod-name" id="hostname">Loading...</p>
+        </div>
+        
+        <div class="info">
+          <p><strong>Балансировка нагрузки:</strong></p>
+          <p>Перезагрузите страницу → изменится Pod Name</p>
+          <p>(LoadBalancer распределяет запросы между подами)</p>
+        </div>
+
+        <div class="info">
+          <p>На практике вы видите:</p>
+          <ul style="text-align: left; display: inline-block;">
+            <li>Deployment управляет репликами (3 пода nginx)</li>
+            <li>Service балансирует трафик между ними</li>
+            <li>ConfigMap хранит конфигурацию отдельно от образа</li>
+            <li>При удалении пода K8s создаёт новый автоматически</li>
+          </ul>
+        </div>
+      </div>
+
+      <script>
+        // Показываем hostname (имя пода)
+        fetch('/etc/hostname')ы
+          .catch(() => {
+            // Если файл недоступен, просто покажем сообщение
+            document.getElementById('hostname').textContent = 'Nginx Pod (см. kubectl describe pod)';
+          });
+        
+        // Альтернатива: добавьте header в nginx конфиг
+        console.log('Pod hostname должен быть виден через kubectl describe pod');
+      </script>
+    </body>
+    </html>
