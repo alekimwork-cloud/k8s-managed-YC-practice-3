@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: personal-app-${STUDENT_ID}-stable
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: personal-app
+      version: stable
+  template:
+    metadata:
+      labels:
+        app: personal-app
+        version: stable
+    spec:
+      volumes:
+      - name: html-config
+        configMap:
+          name: personal-config-${STUDENT_ID}
+      containers:
+      - name: web
+        image: nginx:1.25-alpine
+        volumeMounts:
+        - name: html-config
+          mountPath: /usr/share/nginx/html
+        resources:
+          requests:
+            cpu: "100m"
+      - name: metrics
+        image: prom/prometheus
+        args: ["--config.file=/etc/prometheus/prometheus.yml"]
+        volumeMounts:
+        - name: html-config
+          mountPath: /logs
+
