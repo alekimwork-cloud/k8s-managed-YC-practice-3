@@ -1,13 +1,16 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: personal-hpa-${STUDENT_ID}
+  name: student-app-hpa
+  namespace: student-workspace
+  labels:
+    owner: STUDENT_NAME_GROUP
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: personal-app-${STUDENT_ID}-stable
-  minReplicas: 3
+    name: student-app
+  minReplicas: 1
   maxReplicas: 10
   metrics:
   - type: Resource
@@ -15,4 +18,4 @@ spec:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 70
+        averageUtilization: 50

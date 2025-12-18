@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: student-app-${STUDENT_ID}
+  name: karpov-av-bivt-22-5 #Задайте name со своими инициалами и группой. Example: karpov-av-bivt-22-5
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: student-app
@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: web
-        image: nginx:1.16
+        image: nginx:1.25
         ports:
         - containerPort: 80
