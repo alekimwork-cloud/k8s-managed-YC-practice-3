@@ -1,10 +1,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: student-app
+  name: student-app-canary
   namespace: student-workspace
+  labels:
+    app: student-app
+    owner: STUDENT_NAME_GROUP
 spec:
-  replicas: 2
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -13,6 +16,7 @@ spec:
   selector:
     matchLabels:
       app: student-app
+      version: v2
   template:
     metadata:
       labels:
