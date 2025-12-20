@@ -2,9 +2,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: student-app-hpa
-  namespace: student-workspace
-  labels:
-    owner: STUDENT_NAME_GROUP
+  namespace: student-<STUDENT_NAME_GROUP>
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
