@@ -2,7 +2,9 @@ apiVersion: v1
 kind: Service
 metadata:
   name: student-app-service
-  namespace: student-<STUDENT_NAME_GROUP>
+  namespace: student-workspace
+  labels:
+    owner: STUDENT_NAME_GROUP
 spec:
   type: LoadBalancer
   ports:

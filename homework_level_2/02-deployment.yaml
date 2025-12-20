@@ -2,7 +2,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: student-app
-  namespace: student-<STUDENT_NAME_GROUP>
+  namespace: student-workspace
+  labels:
+    app: student-app
+    owner: STUDENT_NAME_GROUP
 spec:
   replicas: 2
   strategy:
