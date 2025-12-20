@@ -17,7 +17,7 @@
 
 ### 2. Подготовка манифестов
 - Скачайте предоставленные манифесты из директории `homework_level_2`.
-- В каждом манифесте замените `STUDENT_NAME_GROUP` на ваше ФИО и группу в формате "ФамилияИО_Группа" (например, "ИвановИИ_БВТ2201").
+- В каждом манифесте замените `STUDENT_NAME_GROUP` на ваши инициалы и группу в формате "ФамилияИО_Группа" (например, "ivanow-av-bivt-22-9").
 - Файлы для редактирования:
   - `01-namespace.yaml`
   - `02-deployment.yaml`
@@ -26,32 +26,37 @@
   - `05-canary-deployment.yaml`
 
 ### 3. Развертывание приложения
-- Примените манифесты в следующем порядке:
-  1. `kubectl apply -f 01-namespace.yaml`
-  2. `kubectl apply -f 02-deployment.yaml`
-  3. `kubectl apply -f 03-service.yaml`
-  4. `kubectl apply -f 04-hpa.yaml`
+- Примените манифесты 0-4
 - Проверьте статус развертывания: `kubectl get pods -n student-workspace`
-- Получите внешний IP сервиса: `kubectl get svc -n student-workspace`
+- Протестируйте трафик на stable версии (до canary): `kubectl run test-traffic --image=busybox --rm --restart=Never -- /bin/sh -c "for i in \$(seq 1 10); do wget -q -O- http://<EXTERNAL_IP>/ | grep -o 'nginx\|hpa'; done"` (все запросы должны быть на v1, без "nginx")
 
 ### 4. Тестирование Horizontal Pod Autoscaler (HPA)
 - Убедитесь, что HPA активен: `kubectl get hpa -n student-workspace`
 - Создайте нагрузку на приложение для проверки масштабирования:
-  - Используйте инструмент для генерации HTTP-запросов (например, curl в цикле или специализированный инструмент).
-  - Мониторьте количество подов: `kubectl get pods -n student-workspace`
+  - Используйте инструмент для генерации HTTP-запросов (например, curl в цикле или специализированный инструмент). Можно создать нагрузку командой: `kubectl run loadgen --image=busybox --rm -i --tty -- /bin/sh -c "while true; do wget -q -O- http://<EXTERNAL_IP>/; done"`
+  - Мониторьте количество подов: `kubectl get pods -n student-workspace` или в realtime командой `kubectl get hpa -w -n student-workspace`
   - HPA должен увеличить количество реплик при CPU utilization > 50%.
 - Зафиксируйте начальное и конечное количество подов.
 
 ### 5. Выполнение Canary Deployment
+Canary deployment - это стратегия постепенного развертывания новой версии приложения, при которой трафик сначала направляется преимущественно на стабильную версию, а затем постепенно переключается на новую (canary) версию. Это позволяет протестировать новую версию на реальном трафике с минимальными рисками.
+
 - Разверните canary версию приложения: `kubectl apply -f 05-canary-deployment.yaml`
 - Это создаст deployment с новой версией (nginx:alpine) и 1 репликой.
 - Service автоматически начнет балансировать трафик между stable (v1) и canary (v2) версиями.
-- Протестируйте работу приложения, убедитесь, что обе версии доступны.
+- Получите внешний IP сервиса: `kubectl get svc student-app-service -n student-workspace`
+- Протестируйте распределение трафика:
+  - Выполните несколько запросов: `kubectl run test-traffic --image=busybox --rm --restart=Never -- /bin/sh -c "for i in \$(seq 1 10); do wget -q -O- http://<EXTERNAL_IP>/ | grep -o 'nginx\|hpa'; done"`
+  - Это покажет, сколько запросов попало на v1 (hpa-example) и v2 (nginx).
+- Для отслеживания перенаправления трафика в реальном времени:
+  - Используйте скрипт для непрерывного мониторинга: `kubectl run monitor --image=busybox --rm -i --tty -- /bin/sh -c "while true; do echo 'Текущее распределение:'; results=''; for i in \$(seq 1 20); do result=\$(wget -q -O- http://<EXTERNAL_IP>/ | grep -o 'nginx\\|hpa'); results=\"\$results \$result\"; done; echo \$results | tr ' ' '\\n' | sort | uniq -c; sleep 5; done"`
+  - Это будет каждые 5 секунд показывать, сколько запросов попало на каждую версию.
 - Для полноценного canary:
   - Постепенно увеличивайте реплики canary deployment: `kubectl scale deployment student-app-canary --replicas=2 -n student-workspace`
   - Уменьшайте реплики stable deployment: `kubectl scale deployment student-app --replicas=1 -n student-workspace`
-  - Мониторьте распределение трафика и работоспособность.
-- После успешного тестирования переключите весь трафик на canary: удалите stable deployment и переименуйте canary в основной.
+  - Повторно протестируйте трафик: `kubectl run test-traffic2 --image=busybox --rm --restart=Never -- /bin/sh -c "for i in \$(seq 1 20); do wget -q -O- http://<EXTERNAL_IP>/ | grep -o 'nginx\\|hpa'; done | sort | uniq -c"`
+  - Мониторьте распределение: убедитесь, что трафик распределяется пропорционально количеству реплик (например, 1:2 для 1 stable и 2 canary).
+- После успешного тестирования переключите весь трафик на canary: `kubectl delete deployment student-app -n student-workspace` и `kubectl scale deployment student-app-canary --replicas=2 -n student-workspace`
 
 ### 6. Очистка ресурсов
 - После завершения тестирования удалите все ресурсы: `kubectl delete namespace student-workspace`
