@@ -5,7 +5,7 @@ metadata:
   namespace: student-workspace
   labels:
     app: student-app
-    owner: STUDENT_NAME_GROUP
+    owner: kimav
 spec:
   replicas: 2
   strategy:

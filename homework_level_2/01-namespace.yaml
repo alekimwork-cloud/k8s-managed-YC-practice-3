@@ -3,4 +3,4 @@ kind: Namespace
 metadata:
   name: student-workspace
   labels:
-    owner: STUDENT_NAME_GROUP
+    owner: kimav
